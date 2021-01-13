@@ -1,23 +1,15 @@
 # Done by help of https://realpython.com/python-speech-recognition/
-# Depends on pyaudio, pocketsphinx and SpeechRecognition
+# simpleobsws api https://github.com/Palakis/obs-websocket/blob/4.x-current/docs/generated/protocol.md
+# Depends on pyaudio, pocketsphinx, SpeechRecognition, simpleobsws
 import speech_recognition as sr
 import simpleobsws as obsws
 import asyncio
 
-async def requestStartReplayBuffer():
-    # async function for making a StartReplayBuffer request for OBS websocket plugin
-
+async def sendRequest(request):
+    "async method for sending a request to the OBS-Websocket"
     await ws.connect() # connect to the OBS-Websocket
-    result = await ws.call("StartReplayBuffer") # Make a request for StartReplayBuffer
+    result = await ws.call(request) # Make a request for StartReplayBuffer
     print (result)
-    await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
-
-async def requestSaveReplayBuffer():
-    # async function for making a SaveReplayBuffer request for OBS websocket plugin
-
-    await ws.connect() # Make the connection to OBS-Websocket
-    result = await ws.call("SaveReplayBuffer") # Make a request for SaveReplayBuffer
-    print(result)
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
 def recognizeSpeech(recognizer, mic):
@@ -29,8 +21,11 @@ def recognizeSpeech(recognizer, mic):
     # "error":          `None` if no error occured, otherwise a string containing
     #                   an error message if the API could not be reached or
     #                   speech was unrecognizable
-    # "transcription":  `None` if speech could not be transcribed,
+    # "text":           `None` if speech could not be transcribed,
     #                   otherwise a string containing the transcribed text
+    # "rawtext":        `None` if speech could not be transcribed,
+    #                   otherwise raw undestood text
+    # "phase":          The phase of audio recognition
     
     # check that recognizer and microphone arguments are appropriate type
     if not isinstance(recognizer, sr.Recognizer):
@@ -49,22 +44,26 @@ def recognizeSpeech(recognizer, mic):
     response = {
         "success": True,
         "error": None,
-        "text": None
+        "text": None,
+        "rawtext": None,
+        "phase": 0
     }
 
     # try recognizing the speech in the recording
     # if a RequestError or UnknownValueError exception is caught,
     #     update the response object accordingly
     try:
+        response["rawtext"] = recognizer.recognize_sphinx(audio)
+        response["phase"] = 1
         response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.95), ("bottoms up", 1.0)])
+        response["phase"] = 2
     except sr.RequestError:
         # API was unreachable or unresponsive
         response["success"] = False
         response["error"] = "API unavailable"
     except sr.UnknownValueError:
         # speech was unintelligible
-        response["error"] = "Unable to recognize speech"
-
+        response["error"] = "Unable to recognize speech at phase " + str(response["phase"])
     return response
 
 # Recognizer APIS Cheat-Sheet
@@ -82,29 +81,22 @@ loop = asyncio.get_event_loop()
 ws = obsws.obsws(host='127.0.0.1', port=4444, password='plzNoHackerino', loop=loop) # Every possible argument has been passed, but none are required. See lib code for defaults.
 
 # Start the ReplayBuffer
-loop.run_until_complete(requestStartReplayBuffer())
+loop.run_until_complete(sendRequest("StartReplayBuffer"))
 
 # create recognizer and mic instances
 recognizer = sr.Recognizer()
 microphone = sr.Microphone(device_index=2)
 
-a = 1
-
-while (a==1):
+while (True):
     print('Listening for a prompt again!')
     guess = recognizeSpeech(recognizer, microphone)
-
-    #Success checking
-    if guess["text"]:
-        print("Heard speech!")
-        #break
-    if not guess["success"]:
-        continue
-    print("There was no prompt.")
-
+    
     # if there was an error, stop the game by breaking from while loop
     if guess["error"]:
-        print("ERROR: {}".format(guess["error"]))
+        if guess["phase"] < 1:
+            print("ERROR: {}".format(guess["error"]))
+        else:
+            print("raw: " + guess["rawtext"])
         continue
     
     # If we have managed to get to this point, we have
@@ -120,6 +112,6 @@ while (a==1):
     if contains_trigger_word:
         print("Found a triggerword!")
         print(guess["text"])
-        loop.run_until_complete(requestSaveReplayBuffer())
+        loop.run_until_complete(sendRequest("SaveReplayBuffer"))
     else:
-        print("Didn't find a trigger word in: \n\t-" + guess["text"])
+        print("Didn't find a trigger word in: \n\t-" + guess["rawtext"])
