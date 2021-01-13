@@ -12,10 +12,8 @@ async def sendRequest(request):
     print (result)
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
-# set the list of words, maxnumber of guesses, and prompt limit
-WORDS = ["cheers", "bottoms up"]
-
-wordDict = {
+# set the list of triggerwords, and their respected requests
+commandDictionary = {
     'cheers': 'SaveReplayBuffer',
     'bottoms up': 'SaveReplayBuffer'
 }
@@ -42,16 +40,16 @@ while (True):
     # If we have managed to get to this point, we have
     # # Not hit an error
     # # There's some text that has been understood through mic
-    contains_trigger_word = False
-    for word in WORDS:
+    contains_trigger_word = None
+    for word in commandDictionary.keys():
         if word.lower() in guess["text"].lower():
-            contains_trigger_word = True
+            contains_trigger_word = word.lower()
             print("found: " + word)
             break
 
     if contains_trigger_word:
         print("Found a triggerword!")
         print(guess["text"])
-        loop.run_until_complete(sendRequest("SaveReplayBuffer"))
+        loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word]))
     else:
         print("Didn't find a trigger word in: \n\t-" + guess["rawtext"])
