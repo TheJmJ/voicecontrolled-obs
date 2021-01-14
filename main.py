@@ -4,15 +4,18 @@
 import simpleobsws as obsws
 import asyncio
 import speechrecognition_handler as sr
+import os
 
 async def sendRequest(request):
     "async method for sending a request to the OBS-Websocket"
     await ws.connect() # connect to the OBS-Websocket
     result = await ws.call(request) # Make a request for StartReplayBuffer
     if result['status'] == 'error':
-        print ("\tWebsocket Error:" + result['error'])
+        print("\tWebsocket Error:" + result['error'])
+        print("\t" + str(request))
     else:
         print("\tWebsocket Result:" + str(result))
+        print("\t" + str(request))
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
 # set the list of triggerwords, and their respected requests
@@ -22,7 +25,8 @@ async def sendRequest(request):
 #               KeywordSensitivity sets the keyword sensitivity where 0 is the most inprecise, 1.0 the most precise
 commandDictionary = {
     'cheers': ['SaveReplayBuffer', 0.95],
-    'bottoms up': ['SaveReplayBuffer', 1.0]
+    'bottoms up': ['SaveReplayBuffer', 1.0],
+    'bananas are long oranges': [ ['TakeSourceScreenshot', {'saveToFilePath' : str(os.getcwd()), 'width':1280, 'height':720} ], 0.9 ]
 }
 
 #keyword_dictionary = []
@@ -41,7 +45,6 @@ ws = obsws.obsws(host='127.0.0.1', port=4444, password='plzNoHackerino', loop=lo
 loop.run_until_complete(sendRequest("StartReplayBuffer"))
 
 while (True):
-    print('\nListening for a prompt again!')
     guess = sr.recognizeSpeech(sr.recognizer, sr.microphone)
 
     # if there was an error, skip the loop and retry
