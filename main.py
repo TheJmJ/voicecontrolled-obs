@@ -9,14 +9,27 @@ async def sendRequest(request):
     "async method for sending a request to the OBS-Websocket"
     await ws.connect() # connect to the OBS-Websocket
     result = await ws.call(request) # Make a request for StartReplayBuffer
-    print (result)
+    if result['status'] == 'error':
+        print ("\tWebsocket Result:" + str(result))
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
 # set the list of triggerwords, and their respected requests
+# Format: 'KEYWORD': {'OBSRequest', KeywordSensitivity}
+#               Keyword
+#               OBSRequest is the direct request we send to OBS with ws.call(request) command
+#               KeywordSensitivity sets the keyword sensitivity where 0 is the most inprecise, 1.0 the most precise
 commandDictionary = {
-    'cheers': 'SaveReplayBuffer',
-    'bottoms up': 'SaveReplayBuffer'
+    'cheers': ['SaveReplayBuffer', 0.95],
+    'bottoms up': ['SaveReplayBuffer', 1.0]
 }
+
+#keyword_dictionary = []
+#for x in range(len(commandDictionary)):
+#    keyword_dictionary[commandDictionary[x]] = commandDictionary[x][1]
+
+#sr.initKeywordTuples(keyword_dictionary)
+#sr.initKeywordTuples(keyword_dictionary = {list(commandDictionary)[x]:commandDictionary[x][1] for x in range(len(commandDictionary))})
+sr.initKeywordTuples(keyword_dictionary={k:v[1] for k,v in commandDictionary.items()})
 
 # Create the websocket stuff for OBS
 loop = asyncio.get_event_loop()
@@ -31,8 +44,8 @@ while (True):
 
     # if there was an error, skip the loop and retry
     if guess["error"]:
-        if guess["phase"] < 1:
-            print("ERROR: {}".format(guess["error"]))
+        #if guess["phase"] < 1:
+        print("ERROR: {}".format(guess["error"]))
         #else:
             #print("\traw: " + guess["rawtext"])
         continue
@@ -50,6 +63,6 @@ while (True):
     if contains_trigger_word:
         print("Found a triggerword!")
         print("\t" + guess["text"])
-        loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word]))
+        loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word][0]))
     else:
         print("Didn't find a trigger word in: \n\t-" + guess["rawtext"])

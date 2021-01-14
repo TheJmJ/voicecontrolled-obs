@@ -1,5 +1,19 @@
 import speech_recognition as sr
 
+#set default keywordEntries
+keyword_dict=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 0.95)]
+
+# Function where we:
+#   Create an iterable of tuples of the form (keyword, sensitivity)
+#   By given dictionary input an d set it to keywordEntries
+
+def initKeywordTuples(keyword_dictionary):
+    keyword_dict.clear()
+    for keyword in keyword_dictionary.keys():
+        keyword_dict.append( (keyword, keyword_dictionary[keyword]) )
+    print(keyword_dict)
+    return
+
 def selectMicrophone():
     miclist = sr.Microphone.list_microphone_names()
 
@@ -69,7 +83,7 @@ def recognizeSpeech(recognizer, mic):
         print("\traw: " + response["rawtext"])
 
         response["phase"] = 1
-        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 0.95)])
+        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=keyword_dict)
 
         response["phase"] = 2
     except sr.RequestError:
@@ -78,7 +92,10 @@ def recognizeSpeech(recognizer, mic):
         response["error"] = "API unavailable"
     except sr.UnknownValueError:
         # speech was unintelligible
-        response["error"] = "Unable to recognize speech at phase " + str(response["phase"])
+        if response["phase"] < 0:
+            response["error"] = "Unable to recognize speech"
+        else:
+            response["error"] = "Couldn't find a keyword in speech"
 
     if response["error"] is None:
         # Hard code for ambient noise adjustment
