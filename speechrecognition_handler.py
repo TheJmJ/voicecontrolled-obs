@@ -53,6 +53,7 @@ def recognizeSpeech(recognizer, mic):
     # adjust the recognizer sensitivity to ambient noise and record audio
     # from the microphone
     with mic as source:
+        print('\nListening for a prompt for 5 seconds!')
         audio = recognizer.listen(source, phrase_time_limit=5)
 
     # set up the response
@@ -61,7 +62,6 @@ def recognizeSpeech(recognizer, mic):
         "error": None,
         "text": None,
         "rawtext": None,
-        "phase": 0
     }
 
     # Recognizer APIS Cheat-Sheet
@@ -76,26 +76,17 @@ def recognizeSpeech(recognizer, mic):
         print("Done listening, trying to recognize speech")
 
         # TODO: 
+        # *DONE* Dynamically set the keyword entries based on main.py's keyword dictionary
         # * Remove Recognize_Sphinx() to improve on latency (Takes from 2 to 5 seconds to process and is inaccurate although funny)
-        # * Dynamically set the keyword entries based on main.py's keyword dictionary
         # * Modify the debug logs accordingly
-        response["rawtext"] = recognizer.recognize_sphinx(audio)
-        print("\traw: " + response["rawtext"])
-
-        response["phase"] = 1
         response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=keyword_dict)
-
-        response["phase"] = 2
     except sr.RequestError:
         # API was unreachable or unresponsive
         response["success"] = False
         response["error"] = "API unavailable"
     except sr.UnknownValueError:
         # speech was unintelligible
-        if response["phase"] < 0:
-            response["error"] = "Unable to recognize speech"
-        else:
-            response["error"] = "Couldn't find a keyword in speech"
+        response["error"] = "Couldn't find a keyword in speech"
 
     if response["error"] is None:
         # Hard code for ambient noise adjustment
