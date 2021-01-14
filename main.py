@@ -9,13 +9,21 @@ import os
 async def sendRequest(request):
     "async method for sending a request to the OBS-Websocket"
     await ws.connect() # connect to the OBS-Websocket
-    result = await ws.call(request) # Make a request for StartReplayBuffer
+
+    if isinstance(request,str):
+        result = await ws.call(request) # Make a request for StartReplayBuffer
+        print("\tRequest:" + str(request))
+    else:
+        result = await ws.call(request[0], request[1])
+        print("\tRequest: " + str(request[0]))
+        print("\tData: " + str(request[1]))
+
     if result['status'] == 'error':
         print("\tWebsocket Error:" + result['error'])
-        print("\t" + str(request))
+
     else:
         print("\tWebsocket Result:" + str(result))
-        print("\t" + str(request))
+
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
 # set the list of triggerwords, and their respected requests
@@ -26,7 +34,8 @@ async def sendRequest(request):
 commandDictionary = {
     'cheers': ['SaveReplayBuffer', 0.95],
     'bottoms up': ['SaveReplayBuffer', 1.0],
-    'bananas are long oranges': [ ['TakeSourceScreenshot', {'saveToFilePath' : str(os.getcwd()), 'width':1280, 'height':720} ], 0.9 ]
+    'bananas are long oranges': [ ['GetSourceFilters', {'sourceName':'webcam'}], 0.9 ],
+    'pineapple': ['GetVideoInfo', 0.7]
 }
 
 #keyword_dictionary = []
