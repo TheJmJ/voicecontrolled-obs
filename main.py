@@ -10,7 +10,9 @@ async def sendRequest(request):
     await ws.connect() # connect to the OBS-Websocket
     result = await ws.call(request) # Make a request for StartReplayBuffer
     if result['status'] == 'error':
-        print ("\tWebsocket Result:" + str(result))
+        print ("\tWebsocket Error:" + result['error'])
+    else:
+        print("\tWebsocket Result:" + str(result))
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
 # set the list of triggerwords, and their respected requests
@@ -45,11 +47,12 @@ while (True):
     # if there was an error, skip the loop and retry
     if guess["error"]:
         #if guess["phase"] < 1:
-        print("ERROR: {}".format(guess["error"]))
-        #else:
-            #print("\traw: " + guess["rawtext"])
+        print("\tERROR: {}".format(guess["error"]))
         continue
     
+    # NOTE: This might be completely unnecessary, since we only look for
+    #       specific keywords anyways now
+
     # If we have managed to get to this point, we have
     # # Not hit an error
     # # There's some text that has been understood through mic
