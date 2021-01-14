@@ -60,10 +60,17 @@ def recognizeSpeech(recognizer, mic):
     #     update the response object accordingly
     try:
         print("Done listening, trying to recognize speech")
+
+        # TODO: 
+        # * Remove Recognize_Sphinx() to improve on latency (Takes from 2 to 5 seconds to process and is inaccurate although funny)
+        # * Dynamically set the keyword entries based on main.py's keyword dictionary
+        # * Modify the debug logs accordingly
         response["rawtext"] = recognizer.recognize_sphinx(audio)
         print("\traw: " + response["rawtext"])
+
         response["phase"] = 1
-        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 1)])
+        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 0.95)])
+
         response["phase"] = 2
     except sr.RequestError:
         # API was unreachable or unresponsive
