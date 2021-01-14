@@ -39,8 +39,7 @@ def recognizeSpeech(recognizer, mic):
     # adjust the recognizer sensitivity to ambient noise and record audio
     # from the microphone
     with mic as source:
-        #recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
+        audio = recognizer.listen(source, phrase_time_limit=5)
 
     # set up the response
     response = {
@@ -60,9 +59,11 @@ def recognizeSpeech(recognizer, mic):
     # if a RequestError or UnknownValueError exception is caught,
     #     update the response object accordingly
     try:
+        print("Done listening, trying to recognize speech")
         response["rawtext"] = recognizer.recognize_sphinx(audio)
+        print("\traw: " + response["rawtext"])
         response["phase"] = 1
-        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.95), ("bottoms up", 1.0)])
+        response["text"] = recognizer.recognize_sphinx(audio, keyword_entries=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 1)])
         response["phase"] = 2
     except sr.RequestError:
         # API was unreachable or unresponsive
@@ -71,4 +72,13 @@ def recognizeSpeech(recognizer, mic):
     except sr.UnknownValueError:
         # speech was unintelligible
         response["error"] = "Unable to recognize speech at phase " + str(response["phase"])
+
+    if response["error"] is None:
+        # Hard code for ambient noise adjustment
+        if "adjust ambience" in response["text"].lower():
+            print("\t\tAdjusting for ambient noise")
+            with mic as source:
+                recognizer.adjust_for_ambient_noise(source, duration=1)
+            print("\t\tDone adjusting for ambient noise")
+
     return response

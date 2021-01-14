@@ -33,8 +33,8 @@ while (True):
     if guess["error"]:
         if guess["phase"] < 1:
             print("ERROR: {}".format(guess["error"]))
-        else:
-            print("\traw: " + guess["rawtext"])
+        #else:
+            #print("\traw: " + guess["rawtext"])
         continue
     
     # If we have managed to get to this point, we have
@@ -44,12 +44,12 @@ while (True):
     for word in commandDictionary.keys():
         if word.lower() in guess["text"].lower():
             contains_trigger_word = word.lower()
-            print("found: " + word)
+            print("\tfound: " + word)
             break
 
     if contains_trigger_word:
         print("Found a triggerword!")
-        print(guess["text"])
+        print("\t" + guess["text"])
         loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word]))
     else:
         print("Didn't find a trigger word in: \n\t-" + guess["rawtext"])
