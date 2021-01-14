@@ -38,12 +38,6 @@ commandDictionary = {
     'pineapple': ['GetVideoInfo', 0.7]
 }
 
-#keyword_dictionary = []
-#for x in range(len(commandDictionary)):
-#    keyword_dictionary[commandDictionary[x]] = commandDictionary[x][1]
-
-#sr.initKeywordTuples(keyword_dictionary)
-#sr.initKeywordTuples(keyword_dictionary = {list(commandDictionary)[x]:commandDictionary[x][1] for x in range(len(commandDictionary))})
 sr.initKeywordTuples(keyword_dictionary={k:v[1] for k,v in commandDictionary.items()})
 
 # Create the websocket stuff for OBS
@@ -80,4 +74,4 @@ while (True):
         print("\t" + guess["text"])
         loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word][0]))
     else:
-        print("Didn't find a trigger word in: \n\t-" + guess["rawtext"])
+        print("Didn't find a trigger word in: \n\t-" + guess["text"])

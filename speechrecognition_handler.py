@@ -3,11 +3,10 @@ import speech_recognition as sr
 #set default keywordEntries
 keyword_dict=[("cheers", 0.97), ("bottoms up", 1.0), ("adjust ambience", 0.95)]
 
-# Function where we:
-#   Create an iterable of tuples of the form (keyword, sensitivity)
-#   By given dictionary input an d set it to keywordEntries
-
 def initKeywordTuples(keyword_dictionary):
+    # Function where we:
+    # Create an iterable of tuples of the form (keyword, sensitivity)
+    # By given dictionary input an d set it to keywordEntries
     keyword_dict.clear()
     for keyword in keyword_dictionary.keys():
         keyword_dict.append( (keyword, keyword_dictionary[keyword]) )
@@ -60,8 +59,7 @@ def recognizeSpeech(recognizer, mic):
     response = {
         "success": True,
         "error": None,
-        "text": None,
-        "rawtext": None,
+        "text": None
     }
 
     # Recognizer APIS Cheat-Sheet
