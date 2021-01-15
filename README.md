@@ -18,6 +18,6 @@ python -m pip install --upgrade pocketsphinx
 ```
 
 ## Setup
-To setup the keywords and requests, look into requests.py file and read the examples.
+To setup the keywords and requests, look into keywords.py file and read the examples.
 To look into all the possible requests, refer to this documentation on 
 [obs-websocket github page](https://github.com/Palakis/obs-websocket/blob/4.x-current/docs/generated/protocol.md) 
