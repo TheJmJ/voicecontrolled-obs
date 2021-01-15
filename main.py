@@ -5,6 +5,7 @@ import simpleobsws as obsws
 import asyncio
 import speechrecognition_handler as sr
 import os
+import keywords as kw
 
 async def sendRequest(request):
     "async method for sending a request to the OBS-Websocket"
@@ -26,19 +27,8 @@ async def sendRequest(request):
 
     await ws.disconnect() # Clean things up by disconnecting. Only really required in a few specific situations, but good practice if you are done making requests or listening to events.
 
-# set the list of triggerwords, and their respected requests
-# Format: 'KEYWORD': {'OBSRequest', KeywordSensitivity}
-#               Keyword
-#               OBSRequest is the direct request we send to OBS with ws.call(request) command
-#               KeywordSensitivity sets the keyword sensitivity where 0 is the most inprecise, 1.0 the most precise
-commandDictionary = {
-    'cheers': ['SaveReplayBuffer', 0.95],
-    'bottoms up': ['SaveReplayBuffer', 1.0],
-    'bananas are long oranges': [ ['GetSourceFilters', {'sourceName':'webcam'}], 0.9 ],
-    'pineapple': ['GetVideoInfo', 0.7]
-}
 
-sr.initKeywordTuples(keyword_dictionary={k:v[1] for k,v in commandDictionary.items()})
+sr.initKeywordTuples(keyword_dictionary={k:v[1] for k,v in kw.keywordDictionary.items()})
 
 # Create the websocket stuff for OBS
 loop = asyncio.get_event_loop()
@@ -63,7 +53,7 @@ while (True):
     # # Not hit an error
     # # There's some text that has been understood through mic
     contains_trigger_word = None
-    for word in commandDictionary.keys():
+    for word in kw.keywordDictionary.keys():
         if word.lower() in guess["text"].lower():
             contains_trigger_word = word.lower()
             print("\tfound: " + word)
@@ -72,6 +62,6 @@ while (True):
     if contains_trigger_word:
         print("Found a triggerword!")
         print("\t" + guess["text"])
-        loop.run_until_complete(sendRequest(commandDictionary[contains_trigger_word][0]))
+        loop.run_until_complete(sendRequest(kw.keywordDictionary[contains_trigger_word][0]))
     else:
         print("Didn't find a trigger word in: \n\t-" + guess["text"])

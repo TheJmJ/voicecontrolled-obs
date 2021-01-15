@@ -10,7 +10,9 @@ def initKeywordTuples(keyword_dictionary):
     keyword_dict.clear()
     for keyword in keyword_dictionary.keys():
         keyword_dict.append( (keyword, keyword_dictionary[keyword]) )
-    print(keyword_dict)
+    # TODO:
+    #   Print each keyword seperately with their responses instead of raw format
+    print("Keywords used:" + str(keyword_dict))
     return
 
 def selectMicrophone():
@@ -19,8 +21,7 @@ def selectMicrophone():
     for x in range(len(miclist)):
         print("["+ str(x) +"]" + miclist[x])
 
-    print("Enter your mic of choice:")
-    choice = int(input())
+    choice = int(input("Enter your mic device # of choice: "))
     return choice
 
 # create recognizer and mic instances
