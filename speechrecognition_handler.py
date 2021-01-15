@@ -10,9 +10,6 @@ def initKeywordTuples(keyword_dictionary):
     keyword_dict.clear()
     for keyword in keyword_dictionary.keys():
         keyword_dict.append( (keyword, keyword_dictionary[keyword]) )
-    # TODO:
-    #   Print each keyword seperately with their responses instead of raw format
-    print("Keywords used:" + str(keyword_dict))
     return
 
 def selectMicrophone():

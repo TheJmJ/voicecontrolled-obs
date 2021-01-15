@@ -6,11 +6,12 @@
 #       Request format:
 #           No data:    [ <RequestName> ]
 #           With data:  [ <RequestName>, {<data>} ]
-#               where data: <'REQUESTFIELDNAME':VALUE>
+#               where data: <'REQUESTFIELDNAME':VALUE,'ANOTHERREQUESTFIELDNAME':VALUE>
+#   Refer to the obs-websocket documentation for all the request types
+#       https://github.com/Palakis/obs-websocket/blob/4.x-current/docs/generated/protocol.md
 
 keywordDictionary = {
     'cheers': ['SaveReplayBuffer', 0.95],
     'bottoms up': ['SaveReplayBuffer', 1.0],
-    'bananas are long oranges': [ ['GetSourceFilters', {'sourceName':'webcam'}], 0.9 ],
-    'pineapple': ['GetVideoInfo', 0.7]
+    'bananas are long oranges': [ ['GetSourceFilters', {'sourceName':'webcam'}], 0.9 ]
 }

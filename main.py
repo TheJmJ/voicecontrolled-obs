@@ -30,11 +30,18 @@ async def sendRequest(request):
 
 sr.initKeywordTuples(keyword_dictionary={k:v[1] for k,v in kw.keywordDictionary.items()})
 
+# Print each keyword seperately with their responses instead of raw format
+print("Keywords and their requests used:")
+
+for keyword in kw.keywordDictionary.keys():
+    print('\t' + str(keyword) + ' : ' + str(kw.keywordDictionary[keyword][0]))
+
 # Create the websocket stuff for OBS
 loop = asyncio.get_event_loop()
 ws = obsws.obsws(host='127.0.0.1', port=4444, password='plzNoHackerino', loop=loop) # Every possible argument has been passed, but none are required. See lib code for defaults.
 
 # Start the ReplayBuffer
+print("\nMaking sure ReplayBuffer is Started")
 loop.run_until_complete(sendRequest("StartReplayBuffer"))
 
 while (True):
